@@ -4,6 +4,7 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 
 public class MainMenuScreen implements Screen, InputProcessor
@@ -11,6 +12,7 @@ public class MainMenuScreen implements Screen, InputProcessor
 	private final KoiCrawler game;
 	private Texture background;
 	private GlyphLayout glyphLayout;
+	private Animation<Texture> animation;
 
 	public MainMenuScreen (final KoiCrawler game)
 	{

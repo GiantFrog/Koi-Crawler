@@ -3,6 +3,7 @@ package science.skywhale.koicrawler.desktop;
 import com.badlogic.gdx.Files;
 import com.badlogic.gdx.backends.lwjgl.LwjglApplication;
 import com.badlogic.gdx.backends.lwjgl.LwjglApplicationConfiguration;
+import science.skywhale.koicrawler.HexTest;
 import science.skywhale.koicrawler.KoiCrawler;
 
 public class DesktopLauncher

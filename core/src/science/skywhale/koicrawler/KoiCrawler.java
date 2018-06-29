@@ -18,7 +18,7 @@ public class KoiCrawler extends Game
 	BitmapFont bigFont, littleFont;
 	Skin skin;
 	OrthographicCamera camera;
-	int width, height;
+	int width, height, cameraSpeed;
 	Villager character;
 	
 	@Override
@@ -29,6 +29,7 @@ public class KoiCrawler extends Game
 		camera = new OrthographicCamera();
 		width = 1280;
 		height = 720;
+		cameraSpeed = 15;
 
 		fontGen = new FreeTypeFontGenerator(Gdx.files.internal("INFROMAN.TTF"));
 		fontParam = new FreeTypeFontGenerator.FreeTypeFontParameter();

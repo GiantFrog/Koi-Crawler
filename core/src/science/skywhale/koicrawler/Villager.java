@@ -1,6 +1,11 @@
 package science.skywhale.koicrawler;
 
-public class Villager
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.Animation;
+import com.badlogic.gdx.scenes.scene2d.Actor;
+
+public class Villager extends Actor
 {
 	String firstName, lastName;
 	int gender, str, con, dex, itl, res, maxHP, hp, consciousness;
@@ -9,6 +14,7 @@ public class Villager
 	//CharacterClass secondClass;
 	//Weapon weapon;
 	//Proficiency[] proficiencies;
+	Texture texture;
 
 	public Villager (String first, String last, int gender, int str, int itl, int dex, int con, int res)
 	{
@@ -22,5 +28,6 @@ public class Villager
 		this.res = res;
 		hp = maxHP = con + res;
 		consciousness = 2;
+		texture = new Texture(Gdx.files.internal("animations/f_0.png"));
 	}
 }
