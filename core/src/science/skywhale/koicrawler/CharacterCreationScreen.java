@@ -349,7 +349,19 @@ public class CharacterCreationScreen implements Screen
 			{
 				if (points >= 0)
 				{
-					game.character = new Villager(firstNameField.getText(), lastNameField.getText(), genderButtons.getCheckedIndex(), str, itl, dex, con, res);
+					String spriteName;
+					switch (genderButtons.getCheckedIndex())
+					{
+						case 1:
+							spriteName = "m";
+							break;
+						case 2:
+							spriteName = "f";
+							break;
+						default:
+							spriteName = "n";
+					}
+					game.character = new Villager(firstNameField.getText(), lastNameField.getText(), genderButtons.getCheckedIndex(), str, itl, dex, con, res, spriteName, game.atlas);
 					game.setScreen(new LevelScreen(game));
 					dispose();
 				}

@@ -5,6 +5,7 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
@@ -20,10 +21,12 @@ public class KoiCrawler extends Game
 	OrthographicCamera camera;
 	int width, height, cameraSpeed;
 	Villager character;
+	TextureAtlas atlas;
 	
 	@Override
 	public void create()
 	{
+		atlas = new TextureAtlas(Gdx.files.internal("texturePack.atlas"));
 		skin = new Skin(Gdx.files.internal("skin/skin.json"));
 		batch = new SpriteBatch();
 		camera = new OrthographicCamera();

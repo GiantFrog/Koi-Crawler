@@ -7,7 +7,6 @@ import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Animation;
-import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.maps.tiled.TiledMap;
@@ -30,13 +29,9 @@ public class LevelScreen implements Screen, InputProcessor
 	private TiledMapRenderer mapRenderer;
 	private boolean mapLeft, mapRight, mapUp, mapDown;
 	private float unitScale, elapsedTime;
-	//private TextureRegion characterFrame;
-	//private TextureAtlas atlas;
-	//private Animation<TextureRegion> characterAnimation;
-	private Texture texture;
-	private Sprite sprite;
+	private TextureRegion characterFrame;
 
-	final Vector3 curr, last, delta;
+	final Vector3 curr, lastTouched, delta;
 
 	public LevelScreen (final KoiCrawler game)
 	{
@@ -58,26 +53,10 @@ public class LevelScreen implements Screen, InputProcessor
 		sidePanel.setPosition(7*game.width/8, game.height/2);
 		stage.addActor(sidePanel);
 
-		//atlas = new TextureAtlas();
-		switch (game.character.gender)
-		{
-			case (0):
-				//characterAnimation = new Animation<TextureRegion>(0.17f, atlas.findRegions("n"), Animation.PlayMode.LOOP);
-				texture = new Texture(Gdx.files.internal("animations/n_0.png"));
-				break;
-			case (1):
-				//characterAnimation = new Animation<TextureRegion>(0.17f, atlas.findRegions("animations/m"), Animation.PlayMode.LOOP);
-				texture = new Texture(Gdx.files.internal("animations/m_0.png"));
-				break;
-			case (2):
-				//characterAnimation = new Animation<TextureRegion>(0.17f, atlas.findRegions("animations/f"), Animation.PlayMode.LOOP);
-				texture = new Texture(Gdx.files.internal("animations/f_0.png"));
-		}
-
 		elapsedTime = 0;
 
 		curr = new Vector3();
-		last = new Vector3(-1, -1, -1);
+		lastTouched = new Vector3(-1, -1, -1);
 		delta = new Vector3();
 	}
 
@@ -88,6 +67,8 @@ public class LevelScreen implements Screen, InputProcessor
 
 		Gdx.gl.glClearColor(0, 0, 0, 1);
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+		
+		//move the camera around when the flag to is set!
 		if (mapUp)
 			game.camera.translate(0, game.cameraSpeed*Gdx.graphics.getDeltaTime());
 		if (mapDown)
@@ -98,16 +79,16 @@ public class LevelScreen implements Screen, InputProcessor
 			game.camera.translate(game.cameraSpeed*Gdx.graphics.getDeltaTime(), 0);
 		game.camera.update();
 		mapRenderer.setView(game.camera);
+		
 		//SpriteBatch renders based on camera's coordinate system
 		game.batch.setProjectionMatrix(game.camera.combined);
 		stage.act(Gdx.graphics.getDeltaTime());
-		//characterFrame = characterAnimation.getKeyFrame(elapsedTime, true);
+		characterFrame = game.character.animation.getKeyFrame(elapsedTime, true);
 
 		mapRenderer.render();
 		stage.draw();
 		game.batch.begin();
-		//game.batch.draw(characterFrame, 10, 10);
-		game.batch.draw(texture, game.width/2, game.height/2);
+		game.batch.draw(characterFrame, 10, 10, 1, 1);
 		game.batch.end();
 	}
 
@@ -208,7 +189,7 @@ public class LevelScreen implements Screen, InputProcessor
 	@Override
 	public boolean touchUp (int screenX, int screenY, int pointer, int button)
 	{
-		last.set(-1, -1, -1);
+		lastTouched.set(-1, -1, -1);
 		return false;
 	}
 
@@ -216,12 +197,12 @@ public class LevelScreen implements Screen, InputProcessor
 	public boolean touchDragged (int screenX, int screenY, int pointer)
 	{
 		game.camera.unproject(curr.set(screenX, screenY, 0));
-		if (!(last.x == -1 && last.y == -1 && last.z == -1)) {
-			game.camera.unproject(delta.set(last.x, last.y, 0));
+		if (!(lastTouched.x == -1 && lastTouched.y == -1 && lastTouched.z == -1)) {
+			game.camera.unproject(delta.set(lastTouched.x, lastTouched.y, 0));
 			delta.sub(curr);
 			game.camera.position.add(delta.x, delta.y, 0);
 		}
-		last.set(screenX, screenY, 0);
+		lastTouched.set(screenX, screenY, 0);
 		return false;
 	}
 

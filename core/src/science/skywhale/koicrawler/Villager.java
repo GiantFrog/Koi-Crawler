@@ -3,6 +3,8 @@ package science.skywhale.koicrawler;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Animation;
+import com.badlogic.gdx.graphics.g2d.TextureAtlas;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 
 public class Villager extends Actor
@@ -14,9 +16,9 @@ public class Villager extends Actor
 	//CharacterClass secondClass;
 	//Weapon weapon;
 	//Proficiency[] proficiencies;
-	Texture texture;
+	Animation<TextureRegion> animation;
 
-	public Villager (String first, String last, int gender, int str, int itl, int dex, int con, int res)
+	public Villager (String first, String last, int gender, int str, int itl, int dex, int con, int res, String spriteName, TextureAtlas atlas)
 	{
 		firstName = first;
 		lastName = last;
@@ -28,6 +30,6 @@ public class Villager extends Actor
 		this.res = res;
 		hp = maxHP = con + res;
 		consciousness = 2;
-		texture = new Texture(Gdx.files.internal("animations/f_0.png"));
+		animation = new Animation<TextureRegion>(0.17f, atlas.findRegions(spriteName), Animation.PlayMode.LOOP);
 	}
 }
