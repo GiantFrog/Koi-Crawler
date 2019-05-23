@@ -32,7 +32,7 @@ public class KoiCrawler extends Game
 		camera = new OrthographicCamera();
 		width = 1280;
 		height = 720;
-		cameraSpeed = 15;
+		cameraSpeed = 18;
 
 		fontGen = new FreeTypeFontGenerator(Gdx.files.internal("INFROMAN.TTF"));
 		fontParam = new FreeTypeFontGenerator.FreeTypeFontParameter();
