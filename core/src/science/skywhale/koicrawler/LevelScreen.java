@@ -16,6 +16,7 @@ import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.ui.Button;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.utils.viewport.FitViewport;
@@ -33,6 +34,7 @@ public class LevelScreen implements Screen, InputProcessor
 	private float unitScale, elapsedTime;
 	private TextureRegion characterFrame;
 	private Villager selected;
+	private double leftToZoom;
 
 	final Vector3 curr, lastTouched, delta;
 
@@ -47,6 +49,7 @@ public class LevelScreen implements Screen, InputProcessor
 		mapRenderer = new OrthogonalTiledMapRenderer(map, unitScale);
 		mapRenderer.setView(game.camera);
 		game.camera.setToOrtho(false, 40, 22.5f);
+		leftToZoom = 0;
 
 		statsLabel = new Label("STR: " + game.character.getStr() + "\nITL: " + game.character.getItl() + "\nDEX: "
 				+ game.character.getDex() + "\nCON: " + game.character.getCon() + "\nRES: " + game.character.getRes(), game.skin);
@@ -83,6 +86,11 @@ public class LevelScreen implements Screen, InputProcessor
 			game.camera.translate(-game.cameraSpeed*Gdx.graphics.getDeltaTime(), 0);
 		if (mapRight)
 			game.camera.translate(game.cameraSpeed*Gdx.graphics.getDeltaTime(), 0);
+		if (leftToZoom <= -.005 || leftToZoom >= .005)
+		{
+			game.camera.zoom += game.zoomSpeed*leftToZoom*Gdx.graphics.getDeltaTime();
+			leftToZoom -= game.zoomSpeed*leftToZoom*Gdx.graphics.getDeltaTime();
+		}
 		game.camera.update();
 		mapRenderer.setView(game.camera);
 		
@@ -206,7 +214,6 @@ public class LevelScreen implements Screen, InputProcessor
 			selected = null;
 		}
 		
-		
 		return false;
 	}
 
@@ -237,8 +244,15 @@ public class LevelScreen implements Screen, InputProcessor
 	}
 
 	@Override
-	public boolean scrolled (int amount)
+	public boolean scrolled (int amount)	//amount is -1 for each tick up, 1 for each tick down.
 	{
+		//.1 or .3 will be the "power" of a single scroll tick's zoom
+		if (Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT))
+			leftToZoom += .3*amount;
+		else leftToZoom += .1*amount;
+		//make sure we can't zoom too far in, especially to 0.
+		if (game.camera.zoom + leftToZoom < 0.1)
+			leftToZoom = 0.1 - game.camera.zoom;
 		return false;
 	}
 	
