@@ -5,8 +5,10 @@ import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL20;
+import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.input.GestureDetector;
 import com.badlogic.gdx.maps.MapProperties;
 import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.maps.tiled.TiledMapRenderer;
@@ -21,35 +23,36 @@ import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 
-public class LevelScreen implements Screen, InputProcessor
+public class LevelScreen implements Screen
 {
 	private final KoiCrawler game;
+	OrthographicCamera camera;
+	Villager character;
+	private DesktopInput desktopInput;
 	private Stage stage;
 	private Table sidePanel;
 	private Label statsLabel;
 	private TiledMap map;
 	private TiledMapRenderer mapRenderer;
-	private MapProperties mapProperties;
 	private boolean mapLeft, mapRight, mapUp, mapDown;
 	private float unitScale, elapsedTime;
 	private TextureRegion characterFrame;
 	private Villager selected;
-	private double leftToZoom;
-
-	final Vector3 curr, lastTouched, delta;
+	
 
 	public LevelScreen (final KoiCrawler game)
 	{
 		this.game = game;
 		unitScale = 1/32f;
+		camera = game.camera;
+		character = game.character;
 		stage = new Stage(new FitViewport(game.width, game.height));
-		Gdx.input.setInputProcessor(this);
+		desktopInput = new DesktopInput(this);
+		Gdx.input.setInputProcessor(desktopInput);
 		map = new TmxMapLoader().load("badMap.tmx");
-		mapProperties = map.getProperties();
 		mapRenderer = new OrthogonalTiledMapRenderer(map, unitScale);
-		mapRenderer.setView(game.camera);
-		game.camera.setToOrtho(false, 40, 22.5f);
-		leftToZoom = 0;
+		mapRenderer.setView(camera);
+		camera.setToOrtho(false, 40, 22.5f);
 
 		statsLabel = new Label("STR: " + game.character.getStr() + "\nITL: " + game.character.getItl() + "\nDEX: "
 				+ game.character.getDex() + "\nCON: " + game.character.getCon() + "\nRES: " + game.character.getRes(), game.skin);
@@ -61,10 +64,6 @@ public class LevelScreen implements Screen, InputProcessor
 		stage.addActor(sidePanel);
 
 		elapsedTime = 0;
-
-		curr = new Vector3();
-		lastTouched = new Vector3(-1, -1, -1);
-		delta = new Vector3();
 		
 		game.character.moveTo(1, 1);
 	}
@@ -79,23 +78,24 @@ public class LevelScreen implements Screen, InputProcessor
 		
 		//move the camera around when the flag to is set!
 		if (mapUp)
-			game.camera.translate(0, game.cameraSpeed*Gdx.graphics.getDeltaTime());
+			camera.translate(0, game.cameraSpeed*Gdx.graphics.getDeltaTime());
 		if (mapDown)
-			game.camera.translate(0, -game.cameraSpeed*Gdx.graphics.getDeltaTime());
+			camera.translate(0, -game.cameraSpeed*Gdx.graphics.getDeltaTime());
 		if (mapLeft)
-			game.camera.translate(-game.cameraSpeed*Gdx.graphics.getDeltaTime(), 0);
+			camera.translate(-game.cameraSpeed*Gdx.graphics.getDeltaTime(), 0);
 		if (mapRight)
-			game.camera.translate(game.cameraSpeed*Gdx.graphics.getDeltaTime(), 0);
-		if (leftToZoom <= -.005 || leftToZoom >= .005)
+			camera.translate(game.cameraSpeed*Gdx.graphics.getDeltaTime(), 0);
+		if (desktopInput.leftToZoom <= -.005 || desktopInput.leftToZoom >= .005)
 		{
-			game.camera.zoom += game.zoomSpeed*leftToZoom*Gdx.graphics.getDeltaTime();
-			leftToZoom -= game.zoomSpeed*leftToZoom*Gdx.graphics.getDeltaTime();
+			//zoom the camera by the amount we need to multiplied by the time passed and the zoom speed, both are <1
+			camera.zoom += game.zoomSpeed * desktopInput.leftToZoom * Gdx.graphics.getDeltaTime();
+			desktopInput.leftToZoom -= game.zoomSpeed * desktopInput.leftToZoom * Gdx.graphics.getDeltaTime();
 		}
-		game.camera.update();
-		mapRenderer.setView(game.camera);
+		camera.update();
+		mapRenderer.setView(camera);
 		
 		//SpriteBatch renders based on camera's coordinate system
-		game.batch.setProjectionMatrix(game.camera.combined);
+		game.batch.setProjectionMatrix(camera.combined);
 		stage.act(Gdx.graphics.getDeltaTime());
 		
 		characterFrame = game.character.getAnimation().getKeyFrame(elapsedTime, true);
@@ -138,127 +138,52 @@ public class LevelScreen implements Screen, InputProcessor
 	{
 
 	}
-
-	@Override
-	public boolean keyDown (int keycode)
+	
+	public MapProperties getMapProperties()
 	{
-		switch (keycode)
-		{
-			case (Input.Keys.W):			//move camera around the map
-				mapUp = true;
-				break;
-			case (Input.Keys.A):
-				mapLeft = true;
-				break;
-			case (Input.Keys.S):
-				mapDown = true;
-				break;
-			case (Input.Keys.D):
-				mapRight = true;
-				break;
-			case (Input.Keys.SHIFT_LEFT):	//modify cameraSpeed when shift is pressed
-				game.cameraSpeed *= 3;
-				break;
-			default:
-		}
-		return false;
-	}
-
-	@Override
-	public boolean keyUp (int keycode)
-	{
-		switch (keycode)
-		{
-			case (Input.Keys.W):
-				mapUp = false;
-				break;
-			case (Input.Keys.A):
-				mapLeft = false;
-				break;
-			case (Input.Keys.S):
-				mapDown = false;
-				break;
-			case (Input.Keys.D):
-				mapRight = false;
-				break;
-			case (Input.Keys.SHIFT_LEFT):
-				game.cameraSpeed /= 3;
-				break;
-			default:
-		}
-		return false;
-	}
-
-	@Override
-	public boolean keyTyped (char character)
-	{
-		return false;
-	}
-
-	@Override
-	public boolean touchDown (int screenX, int screenY, int pointer, int button)
-	{
-		//if (button == Buttons.RIGHT) //this gets right clicks
-		
-		//make a vector and translate its coordinates from screen pixels into map tiles
-		Vector3 touchVector = new Vector3(screenX, screenY, 0);
-		game.camera.unproject(touchVector);
-		
-		//if we tap the character, select them!
-		if ((int)touchVector.x == game.character.getX() && (int)touchVector.y == game.character.getY())
-			selected = game.character;
-		//if we tap nothing, but do it on the map and something is selected, move that something there!
-		else if (selected != null && inBounds(touchVector))
-		{
-			selected.moveTo((int) touchVector.x, (int) touchVector.y);
-			selected = null;
-		}
-		
-		return false;
-	}
-
-	@Override
-	public boolean touchUp (int screenX, int screenY, int pointer, int button)
-	{
-		lastTouched.set(-1, -1, -1);
-		return false;
-	}
-
-	@Override
-	public boolean touchDragged (int screenX, int screenY, int pointer)
-	{
-		game.camera.unproject(curr.set(screenX, screenY, 0));
-		if (!(lastTouched.x == -1 && lastTouched.y == -1 && lastTouched.z == -1)) {
-			game.camera.unproject(delta.set(lastTouched.x, lastTouched.y, 0));
-			delta.sub(curr);
-			game.camera.position.add(delta.x, delta.y, 0);
-		}
-		lastTouched.set(screenX, screenY, 0);
-		return false;
-	}
-
-	@Override
-	public boolean mouseMoved (int screenX, int screenY)
-	{
-		return false;
-	}
-
-	@Override
-	public boolean scrolled (int amount)	//amount is -1 for each tick up, 1 for each tick down.
-	{
-		//.1 or .3 will be the "power" of a single scroll tick's zoom
-		if (Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT))
-			leftToZoom += .3*amount;
-		else leftToZoom += .1*amount;
-		//make sure we can't zoom too far in, especially to 0.
-		if (game.camera.zoom + leftToZoom < 0.1)
-			leftToZoom = 0.1 - game.camera.zoom;
-		return false;
+		return map.getProperties();
 	}
 	
-	private boolean inBounds (Vector3 vector)
+	public void setMapLeft (boolean mapLeft)
 	{
-		return vector.x >= 0 && vector.y >= 0 && vector.x < mapProperties.get("width", Integer.class)
-				&& vector.y < mapProperties.get("height", Integer.class);
+		this.mapLeft = mapLeft;
+	}
+	
+	public void setMapRight (boolean mapRight)
+	{
+		this.mapRight = mapRight;
+	}
+	
+	public void setMapUp (boolean mapUp)
+	{
+		this.mapUp = mapUp;
+	}
+	
+	public void setMapDown (boolean mapDown)
+	{
+		this.mapDown = mapDown;
+	}
+	
+	public void makeCameraSpeedy (boolean speedy)
+	{
+		if (speedy)
+			game.cameraSpeed *= 3;
+		else
+			game.cameraSpeed /= 3;
+	}
+	
+	public void setSelected (Villager selected)
+	{
+		this.selected = selected;
+	}
+	
+	//moves whatever is selected, if anything, to the given coordinates.
+	public void tryMove (int x, int y)
+	{
+		if (selected != null)
+		{
+			selected.moveTo(x, y);
+			selected = null;
+		}
 	}
 }
