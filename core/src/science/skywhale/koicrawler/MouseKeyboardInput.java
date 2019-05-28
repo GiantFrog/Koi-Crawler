@@ -5,19 +5,17 @@ import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.math.Vector3;
 
-public class DesktopInput implements InputProcessor
+public class MouseKeyboardInput implements InputProcessor
 {
 	private LevelScreen level;
 	private final Vector3 curr, lastTouched, delta;
-	double leftToZoom;
 	
-	public DesktopInput (LevelScreen level)
+	public MouseKeyboardInput (LevelScreen level)
 	{
 		this.level = level;
 		curr = new Vector3();
 		lastTouched = new Vector3(-1, -1, -1);
 		delta = new Vector3();
-		leftToZoom = 0;
 	}
 	
 	@Override
@@ -128,11 +126,11 @@ public class DesktopInput implements InputProcessor
 	{
 		//.1 or .3 will be the "power" of a single scroll tick's zoom
 		if (Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT))
-			leftToZoom += .3*amount;
-		else leftToZoom += .1*amount;
+			level.leftToZoom += .3*amount;
+		else level.leftToZoom += .1*amount;
 		//make sure we can't zoom too far in, especially to 0.
-		if (level.camera.zoom + leftToZoom < 0.1)
-			leftToZoom = 0.1 - level.camera.zoom;
+		if (level.camera.zoom + level.leftToZoom < 0.1)
+			level.leftToZoom = 0.1 - level.camera.zoom;
 		return false;
 	}
 	

@@ -1,12 +1,10 @@
 package science.skywhale.koicrawler;
 
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.Input;
-import com.badlogic.gdx.InputProcessor;
+import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
-import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.input.GestureDetector;
 import com.badlogic.gdx.maps.MapProperties;
@@ -14,11 +12,7 @@ import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.maps.tiled.TiledMapRenderer;
 import com.badlogic.gdx.maps.tiled.TmxMapLoader;
 import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
-import com.badlogic.gdx.math.Rectangle;
-import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.scenes.scene2d.Stage;
-import com.badlogic.gdx.scenes.scene2d.ui.Button;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.utils.viewport.FitViewport;
@@ -28,7 +22,10 @@ public class LevelScreen implements Screen
 	private final KoiCrawler game;
 	OrthographicCamera camera;
 	Villager character;
-	private DesktopInput desktopInput;
+	private MouseKeyboardInput mouseKeyboardInput;
+	private TouchInput touchInput;
+	private InputMultiplexer inputMultiplexer;
+	double leftToZoom;
 	private Stage stage;
 	private Table sidePanel;
 	private Label statsLabel;
@@ -47,8 +44,15 @@ public class LevelScreen implements Screen
 		camera = game.camera;
 		character = game.character;
 		stage = new Stage(new FitViewport(game.width, game.height));
-		desktopInput = new DesktopInput(this);
-		Gdx.input.setInputProcessor(desktopInput);
+		
+		mouseKeyboardInput = new MouseKeyboardInput(this);
+		touchInput = new TouchInput(this);
+		inputMultiplexer = new InputMultiplexer();
+		inputMultiplexer.addProcessor(new GestureDetector(touchInput));
+		inputMultiplexer.addProcessor(mouseKeyboardInput);
+		Gdx.input.setInputProcessor(inputMultiplexer);
+		leftToZoom = 0;
+		
 		map = new TmxMapLoader().load("badMap.tmx");
 		mapRenderer = new OrthogonalTiledMapRenderer(map, unitScale);
 		mapRenderer.setView(camera);
@@ -85,11 +89,11 @@ public class LevelScreen implements Screen
 			camera.translate(-game.cameraSpeed*Gdx.graphics.getDeltaTime(), 0);
 		if (mapRight)
 			camera.translate(game.cameraSpeed*Gdx.graphics.getDeltaTime(), 0);
-		if (desktopInput.leftToZoom <= -.005 || desktopInput.leftToZoom >= .005)
+		if (leftToZoom <= -.005 || leftToZoom >= .005)
 		{
 			//zoom the camera by the amount we need to multiplied by the time passed and the zoom speed, both are <1
-			camera.zoom += game.zoomSpeed * desktopInput.leftToZoom * Gdx.graphics.getDeltaTime();
-			desktopInput.leftToZoom -= game.zoomSpeed * desktopInput.leftToZoom * Gdx.graphics.getDeltaTime();
+			camera.zoom += game.zoomSpeed * leftToZoom * Gdx.graphics.getDeltaTime();
+			leftToZoom -= game.zoomSpeed * leftToZoom * Gdx.graphics.getDeltaTime();
 		}
 		camera.update();
 		mapRenderer.setView(camera);
