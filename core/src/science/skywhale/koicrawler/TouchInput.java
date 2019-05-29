@@ -54,13 +54,13 @@ public class TouchInput implements GestureDetector.GestureListener
 	@Override
 	public boolean zoom (float initialDistance, float distance)
 	{
-		//first time?
+		//first time? happens once per pinch.
 		if (Float.isNaN(previousDistance))
 		{
 			level.leftToZoom += 1 - distance/initialDistance;
 			previousDistance = distance;
 		}
-		//without checking for the previous distance, a quick pinch scrolls infinitely until released.
+		//without checking for the previous distance, a quick pinch scrolls indefinitely until released. don't want that.
 		else
 		{
 			level.leftToZoom += 1 - distance/previousDistance;

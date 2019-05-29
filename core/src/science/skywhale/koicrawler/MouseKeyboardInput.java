@@ -124,14 +124,18 @@ public class MouseKeyboardInput implements InputProcessor
 	@Override
 	public boolean scrolled (int amount)	//amount is -1 for each tick up, 1 for each tick down.
 	{
+		//sets the zoom anchor, setTargetPos handles unprojecting the vector
+		level.setTargetPos(new Vector3(Gdx.input.getX(), Gdx.input.getY(), 0));
+		
 		//.1 or .3 will be the "power" of a single scroll tick's zoom
 		if (Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT))
 			level.leftToZoom += .3*amount;
 		else level.leftToZoom += .1*amount;
+		
 		//make sure we can't zoom too far in, especially to 0.
 		if (level.camera.zoom + level.leftToZoom < 0.1)
 			level.leftToZoom = 0.1 - level.camera.zoom;
-		return false;
+		return true;
 	}
 	
 	private boolean inBounds (Vector3 vector)
