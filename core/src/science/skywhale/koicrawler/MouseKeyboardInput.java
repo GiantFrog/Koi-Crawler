@@ -24,18 +24,23 @@ public class MouseKeyboardInput implements InputProcessor
 		switch (keycode)
 		{
 			case Input.Keys.W:			//move camera around the map
+			case Input.Keys.UP:
 				level.setMapUp(true);
 				break;
 			case Input.Keys.A:
+			case Input.Keys.LEFT:
 				level.setMapLeft(true);
 				break;
 			case Input.Keys.S:
+			case Input.Keys.DOWN:
 				level.setMapDown(true);
 				break;
 			case Input.Keys.D:
+			case Input.Keys.RIGHT:
 				level.setMapRight(true);
 				break;
 			case Input.Keys.SHIFT_LEFT:	//modify cameraSpeed when shift is pressed
+			case Input.Keys.SHIFT_RIGHT:
 				level.makeCameraSpeedy(true);
 				break;
 			default:
@@ -49,18 +54,23 @@ public class MouseKeyboardInput implements InputProcessor
 		switch (keycode)
 		{
 			case Input.Keys.W:
+			case Input.Keys.UP:
 				level.setMapUp(false);
 				break;
 			case Input.Keys.A:
+			case Input.Keys.LEFT:
 				level.setMapLeft(false);
 				break;
 			case Input.Keys.S:
+			case Input.Keys.DOWN:
 				level.setMapDown(false);
 				break;
 			case Input.Keys.D:
+			case Input.Keys.RIGHT:
 				level.setMapRight(false);
 				break;
 			case Input.Keys.SHIFT_LEFT:
+			case Input.Keys.SHIFT_RIGHT:
 				level.makeCameraSpeedy(false);
 				break;
 			default:

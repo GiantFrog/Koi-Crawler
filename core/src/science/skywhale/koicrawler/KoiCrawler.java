@@ -19,7 +19,7 @@ public class KoiCrawler extends Game
 	BitmapFont bigFont, littleFont;
 	Skin skin;
 	OrthographicCamera camera;
-	int width, height, cameraSpeed, zoomSpeed;
+	int width, height, cameraSpeed, zoomSpeed, cameraResponsiveness;
 	Villager character;
 	TextureAtlas atlas;
 	
@@ -33,6 +33,7 @@ public class KoiCrawler extends Game
 		width = 1280;
 		height = 720;
 		cameraSpeed = 18;
+		cameraResponsiveness = 18;
 		zoomSpeed = 10;
 
 		fontGen = new FreeTypeFontGenerator(Gdx.files.internal("INFROMAN.TTF"));

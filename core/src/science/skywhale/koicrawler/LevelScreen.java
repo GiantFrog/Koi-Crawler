@@ -25,7 +25,7 @@ public class LevelScreen implements Screen
 	private MouseKeyboardInput mouseKeyboardInput;
 	private TouchInput touchInput;
 	private InputMultiplexer inputMultiplexer;
-	double leftToZoom;
+	double leftToZoom, leftToMoveX, leftToMoveY;
 	private Stage stage;
 	private Table sidePanel;
 	private Label statsLabel;
@@ -51,25 +51,25 @@ public class LevelScreen implements Screen
 		inputMultiplexer.addProcessor(new GestureDetector(touchInput));
 		inputMultiplexer.addProcessor(mouseKeyboardInput);
 		Gdx.input.setInputProcessor(inputMultiplexer);
-		leftToZoom = 0;
+		leftToZoom = leftToMoveX = leftToMoveY = 0;
 		
 		map = new TmxMapLoader().load("badMap.tmx");
 		mapRenderer = new OrthogonalTiledMapRenderer(map, unitScale);
 		mapRenderer.setView(camera);
 		camera.setToOrtho(false, 40, 22.5f);
 
-		statsLabel = new Label("STR: " + game.character.getStr() + "\nITL: " + game.character.getItl() + "\nDEX: "
-				+ game.character.getDex() + "\nCON: " + game.character.getCon() + "\nRES: " + game.character.getRes(), game.skin);
+		statsLabel = new Label("STR: " + character.getStr() + "\nITL: " + character.getItl() + "\nDEX: "
+				+ character.getDex() + "\nCON: " + character.getCon() + "\nRES: " + character.getRes(), game.skin);
 
 		sidePanel = new Table();
 		sidePanel.add(statsLabel);
 
-		sidePanel.setPosition(game.width*7/8, game.height*3/4);
+		sidePanel.setPosition(game.width*7/8f, game.height*3/4f);
 		stage.addActor(sidePanel);
 
 		elapsedTime = 0;
 		
-		game.character.moveTo(1, 1);
+		character.moveTo(1, 1);
 	}
 
 	@Override
@@ -80,20 +80,30 @@ public class LevelScreen implements Screen
 		Gdx.gl.glClearColor(0, 0, 0, 1);
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 		
-		//move the camera around when the flag to is set!
+		//move the camera around when the flag to do so is set!
 		if (mapUp)
-			camera.translate(0, game.cameraSpeed*Gdx.graphics.getDeltaTime());
+			leftToMoveY += game.cameraSpeed/40f;
 		if (mapDown)
-			camera.translate(0, -game.cameraSpeed*Gdx.graphics.getDeltaTime());
+			leftToMoveY -= game.cameraSpeed/40f;
 		if (mapLeft)
-			camera.translate(-game.cameraSpeed*Gdx.graphics.getDeltaTime(), 0);
+			leftToMoveX -= game.cameraSpeed/40f;
 		if (mapRight)
-			camera.translate(game.cameraSpeed*Gdx.graphics.getDeltaTime(), 0);
+			leftToMoveX += game.cameraSpeed/40f;
+		//smoothly scroll to the target level of zoom
 		if (leftToZoom <= -.005 || leftToZoom >= .005)
 		{
 			//zoom the camera by the amount we need to multiplied by the time passed and the zoom speed, both are <1
 			camera.zoom += game.zoomSpeed * leftToZoom * Gdx.graphics.getDeltaTime();
 			leftToZoom -= game.zoomSpeed * leftToZoom * Gdx.graphics.getDeltaTime();
+		}
+		//smoothly move the camera in the x and y directions if leftToMove is updated by something
+		if (leftToMoveX <= -.005 || leftToMoveX >= .005 || leftToMoveY <= -.005 || leftToMoveY >= .005)
+		{
+			float movingX = game.cameraResponsiveness * (float)leftToMoveX * Gdx.graphics.getDeltaTime();
+			float movingY = game.cameraResponsiveness * (float)leftToMoveY * Gdx.graphics.getDeltaTime();
+			camera.translate(movingX, movingY);
+			leftToMoveX -= movingX;
+			leftToMoveY -= movingY;
 		}
 		camera.update();
 		mapRenderer.setView(camera);
@@ -102,12 +112,12 @@ public class LevelScreen implements Screen
 		game.batch.setProjectionMatrix(camera.combined);
 		stage.act(Gdx.graphics.getDeltaTime());
 		
-		characterFrame = game.character.getAnimation().getKeyFrame(elapsedTime, true);
+		characterFrame = character.getAnimation().getKeyFrame(elapsedTime, true);
 
 		mapRenderer.render();
 		stage.draw();
 		game.batch.begin();
-		game.batch.draw(characterFrame, game.character.getX(), game.character.getY(), 1, 1);
+		game.batch.draw(characterFrame, character.getX(), character.getY(), 1, 1);
 		game.batch.end();
 	}
 
@@ -115,6 +125,8 @@ public class LevelScreen implements Screen
 	public void resize (int width, int height)
 	{
 		stage.getViewport().update(width, height, true);
+		game.width = width;
+		game.height = height;
 	}
 	@Override
 	public void show()
