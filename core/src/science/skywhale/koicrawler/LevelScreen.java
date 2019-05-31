@@ -15,7 +15,9 @@ import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
+import com.badlogic.gdx.utils.viewport.ExtendViewport;
 import com.badlogic.gdx.utils.viewport.FitViewport;
+import com.badlogic.gdx.utils.viewport.ScreenViewport;
 
 public class LevelScreen implements Screen
 {
@@ -43,7 +45,7 @@ public class LevelScreen implements Screen
 		unitScale = 1/32f;
 		camera = game.camera;
 		character = game.character;
-		stage = new Stage(new FitViewport(game.width, game.height));
+		stage = new Stage(new ExtendViewport(8, 8, camera));
 		
 		mouseKeyboardInput = new MouseKeyboardInput(this);
 		touchInput = new TouchInput(this);
@@ -125,8 +127,8 @@ public class LevelScreen implements Screen
 	public void resize (int width, int height)
 	{
 		stage.getViewport().update(width, height, true);
-		game.width = width;
-		game.height = height;
+		//game.width = width;
+		//game.height = height;
 	}
 	@Override
 	public void show()
